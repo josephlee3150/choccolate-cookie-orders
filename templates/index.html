@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+    <title>숙제 1</title>
+    <!-- CSS -->
+
+    <style>
+        * {
+            font-family: "Jua";
+        }
+
+        .smallfont {
+            font-size: 25px;
+        }
+
+        .smallerfont {
+            font-size: 20px;
+        }
+
+        .cookieFont {
+            font-size: 10px;
+            font-style: italic;
+            color: red;
+        }
+
+        .bigfont {
+            font-size: 45px;
+        }
+
+        .imageCSS {
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding-top: 10px;
+            width: 500px;
+            height: 600px;
+            margin: auto;
+        }
+
+        .wrap {
+            width: 650px;
+            margin: auto;
+            margin-top: 20px;
+        }
+
+        .button {
+            margin: auto auto auto 250px;
+            width: 10px;
+        }
+    </style>
+
+    <script>
+
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {},
+                success: function (response) {
+                    let data = response[1]['rate']
+                    let temp_html = `<p style="color: blue">달러-원 환율: ${data} </p>`
+                    $('#currency').append(temp_html);
+                }
+            })
+            // $('#bigTable').html('');
+            listing();
+        });
+
+        function order_complete() {
+            let phone = $('#inlineFormPhone').val();
+            if ($('#inlineFormInputGroup').val() == '') {
+                alert('이름을 입력해주세요')
+            }
+            else if ($('#inlineFormCustomSelect').val() == '--수량을 선택하세요--') {
+                alert('수량을 선택하세요')
+            }
+            else if ($('#inlineFormAddress').val() == '') {
+                alert('주소를 입력해주세요');
+            }
+            else if (phone == '') {
+                alert('전화번호를 입력해주세요')
+            }
+            else if (!(phone.split('-')[0] == '010' && (isNaN(phone.split('-')[1]) == false && phone.split('-')[1].length == 4) && (isNaN(phone.split('-')[2])) == false && phone.split('-')[2].length == 4)) {
+                alert('휴대폰번호 입력 형식이 틀립니다. \n 010-0000-0000으로 입력해주세요')
+            }
+            else {
+                alert('주문 완료되었습니다!')
+            }
+
+            let orderer = $('#inlineFormInputGroup').val();
+            let order_amount = $('#inlineFormCustomSelect').val();
+            let order_address = $('#inlineFormAddress').val();
+            let order_phone = $('#inlineFormPhone').val();
+
+            $.ajax({
+                type: "POST",
+                url: "/clientOrder",
+                data: { name_give: orderer, amount_give: order_amount, address_give: order_address, phone_give: order_phone },
+                success: function (response) { // 성공하면
+                    if (response['result'] == 'success') {
+                        // alert(response['msg']);
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+
+        function listing() {
+            $.ajax({
+                type: "GET",
+                url: "/orders",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        let orders = response['orders'];
+                        for (let i = 0; i < orders.length; ++i) {
+                            make_chart(orders[i]['name'], orders[i]['amount'], orders[i]['address'], orders[i]['phone'])
+                        }
+                    }
+                }
+            })
+        }
+
+        function make_chart(name, amount, address, phone) {
+            let temp_html = `<tr>
+                    <th scope="row">${name}</th>
+                    <td>${amount}</td>
+                    <td>${address}</td>
+                    <td>${phone}</td>
+                </tr>`
+
+            $('#table').append(temp_html);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="imageCSS">
+        <img src="https://images.unsplash.com/photo-1589431606033-fcdc64ffe6bf?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&dl=lindsey-savage-xAHsFa4eJtk-unsplash.jpg"
+            class="img-fluid imageCSS" alt="Responsive image" />
+    </div>
+    <div class="wrap">
+        <span class="bigfont">초콜릿 쿠키와 우유팝니다! </span>
+        <span class="smallfont">가격: 3000원/세트</span>
+        <hr />
+        <p class="smallerfont">
+            오븐에서 갓 구운 따끈한 쿠키와 베이커리 바로 옆에있는 소농장에서 만든
+            신선한 우유팝니다. 입안에서 녹는 초콜릿과 신선한 우유의 조합을
+            느껴보세요!
+        </p>
+        <div id="currency">
+        </div>
+        <div>
+            <div class="col-10">
+                <label class="sr-only" for="inlineFormInputGroup">Username</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">주문자 이름</div>
+                    </div>
+                    <input type="text" class="form-control" id="inlineFormInputGroup" />
+                </div>
+            </div>
+            <div class="col-5">
+                <label class="sr-only" for="inlineFormInputGroup">Username</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">수량</div>
+                    </div>
+                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect">
+                        <option selected>--수량을 선택하세요--</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                        <option value="4">Four</option>
+                        <option value="5">Five</option>
+                        <option value="6">Six</option>
+                    </select>
+                    <div class="cookieFont">
+                        쿠키와 우유의 신선함 유지를 위해 주문당 최대한 6세트만 사실수
+                        있습니다!
+                    </div>
+                </div>
+            </div>
+            <div class="col-10">
+                <label class="sr-only" for="inlineFormInputGroup">Username</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">주소</div>
+                    </div>
+                    <input type="text" class="form-control" id="inlineFormAddress" />
+                </div>
+            </div>
+            <div class="col-10">
+                <label class="sr-only" for="inlineFormInputGroup">Username</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">전화번호</div>
+                    </div>
+                    <input type="text" class="form-control" id="inlineFormPhone" />
+                </div>
+            </div>
+            <div class="col-auto button">
+                <button onclick="order_complete()" type="submit" class="btn btn-primary mb-2">
+                    주문하기
+                </button>
+            </div>
+        </div>
+        <table id="bigTable" class="table">
+            <thead>
+                <tr>
+                    <th scope="coㅣ" style="width:10%">이름</th>
+                    <th scope="col" style="width:10%">수량</th>
+                    <th scope="col" style="width:40%">주소</th>
+                    <th scope="col" style="width:20%">전화번호</th>
+                </tr>
+            </thead>
+            <tbody id="table">
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
